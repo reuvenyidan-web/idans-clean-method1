@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Idan's Clean Method</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5f2ec;
+    --ink:#1a1a1a;
+    --red:#d92b1c;
+    --green:#1a7a3c;
+    --gold:#b8860b;
+    --card:#ffffff;
+    --border:#e0d8cc;
+    --pill-bg:#f0ece4;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg);font-family:'Inter',sans-serif;color:var(--ink);max-width:420px;margin:0 auto;padding-bottom:90px;}
+
+  /* ── GATE SCREEN ── */
+  #gateScreen{
+    position:fixed;inset:0;z-index:999;
+    background:var(--ink);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:28px 24px;
+  }
+  .gate-logo{color:#fff;font-size:26px;font-weight:900;text-align:center;margin-bottom:4px;}
+  .gate-logo span{color:#8fbc6e;}
+  .gate-sub{color:#aaa;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;text-align:center;margin-bottom:28px;}
+  .gate-card{background:#fff;border-radius:16px;padding:22px 20px;width:100%;max-width:340px;}
+  .gate-card h2{font-size:16px;font-weight:900;margin-bottom:4px;}
+  .gate-card p{font-size:11.5px;color:#777;font-weight:600;margin-bottom:18px;line-height:1.4;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:#555;margin-bottom:4px;}
+  .field input{width:100%;border:2px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;font-family:'Inter',sans-serif;color:var(--ink);outline:none;transition:border .2s;}
+  .field input:focus{border-color:var(--green);}
+  .field .opt{color:#aaa;font-size:9.5px;font-weight:700;margin-left:4px;}
+  .gate-err{color:var(--red);font-size:11px;font-weight:700;margin-bottom:10px;display:none;text-align:center;}
+  .gate-btn{width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:900;cursor:pointer;margin-top:4px;font-family:'Inter',sans-serif;}
+  .gate-btn:active{opacity:.85;}
+  .gate-saving{display:none;text-align:center;color:#777;font-size:12px;font-weight:600;margin-top:10px;}
+
+  /* ── MAIN APP ── */
+  #mainApp{display:none;}
+
+  .header{background:var(--ink);padding:18px 16px 14px;position:sticky;top:0;z-index:100;}
+  .header-top{display:flex;justify-content:space-between;align-items:center;}
+  .logo{color:#fff;font-size:18px;font-weight:900;letter-spacing:-.3px;}
+  .logo span{color:#8fbc6e;}
+  .tagline{color:#aaa;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
+  .enemies-btn{background:var(--red);color:#fff;border:none;padding:7px 12px;border-radius:20px;font-size:11px;font-weight:800;letter-spacing:.3px;cursor:pointer;text-transform:uppercase;}
+
+  .enemies-drawer{background:#1e0a08;overflow:hidden;max-height:0;transition:max-height .35s ease;}
+  .enemies-drawer.open{max-height:600px;}
+  .enemies-inner{padding:14px 16px 16px;}
+  .enemies-title{color:var(--red);font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+  .enemy-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:9px;}
+  .enemy-num{background:var(--red);color:#fff;font-size:11px;font-weight:900;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .enemy-name{color:#fff;font-size:13px;font-weight:800;}
+  .enemy-aka{color:#aaa;font-size:10px;font-weight:600;margin-top:1px;line-height:1.4;}
+  .enemy-oils{color:#888;font-size:9.5px;margin-top:3px;line-height:1.4;border-top:1px solid #333;padding-top:3px;}
+
+  .tabs{display:flex;gap:0;background:#fff;border-bottom:2px solid var(--border);position:sticky;top:72px;z-index:99;overflow-x:auto;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{flex:1;min-width:70px;padding:11px 6px;text-align:center;font-size:11px;font-weight:700;color:#888;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s;}
+  .tab.active{color:var(--green);border-bottom-color:var(--green);}
+
+  .search-wrap{padding:12px 16px 6px;}
+  .search-input{width:100%;background:#fff;border:2px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;font-family:'Inter',sans-serif;color:var(--ink);outline:none;}
+  .search-input:focus{border-color:var(--green);}
+
+  .store-info{margin:8px 16px 4px;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;display:flex;align-items:center;gap:8px;}
+  .store-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0;}
+  .store-addr{font-size:10.5px;font-weight:700;color:#555;line-height:1.4;}
+
+  .items{padding:8px 16px;}
+  .item-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;}
+  .item-header{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;}
+  .item-icon{font-size:20px;width:36px;height:36px;background:var(--pill-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .item-main{flex:1;}
+  .item-toss{font-size:13px;font-weight:800;color:var(--red);}
+  .item-swap-preview{font-size:11px;color:var(--green);font-weight:700;margin-top:1px;}
+  .item-chevron{font-size:16px;color:#bbb;transition:transform .2s;}
+  .item-card.open .item-chevron{transform:rotate(180deg);}
+  .item-body{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+  .item-card.open .item-body{max-height:300px;}
+  .item-body-inner{padding:0 14px 13px;}
+  .why-label{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#999;margin-bottom:3px;}
+  .why-text{font-size:11.5px;color:#c0392b;font-weight:600;line-height:1.4;margin-bottom:10px;}
+  .swap-label{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#999;margin-bottom:3px;}
+  .swap-text{font-size:12px;font-weight:700;color:var(--green);line-height:1.4;}
+  .swap-text b{font-weight:900;}
+  .kosher-badge{display:inline-block;background:#e8f5e9;color:var(--green);border:1px solid #a5d6a7;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;margin-top:6px;letter-spacing:.3px;}
+
+  .section-empty{text-align:center;padding:40px 20px;color:#aaa;font-size:13px;font-weight:600;}
+
+  .cta-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:var(--ink);padding:14px 16px;z-index:200;}
+  .cta-text{color:#aaa;font-size:10px;font-weight:600;text-align:center;margin-bottom:8px;letter-spacing:.3px;}
+  .cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:#25D366;color:#fff;border-radius:12px;padding:14px;text-decoration:none;font-size:15px;font-weight:900;}
+</style>
+</head>
+<body>
+
+<!-- ══ GATE SCREEN ══ -->
+<div id="gateScreen">
+  <div class="gate-logo">Idan's <span>Clean</span> Method</div>
+  <div class="gate-sub">Kosher · Anti-Inflammatory · Real Food</div>
+
+  <div class="gate-card">
+    <h2>Get Your Free Guide</h2>
+    <p>Enter your details and the access code from the session to unlock the full guide.</p>
+
+    <div class="field">
+      <label>First Name</label>
+      <input type="text" id="firstName" placeholder="Sarah" autocomplete="given-name">
+    </div>
+    <div class="field">
+      <label>Last Name</label>
+      <input type="text" id="lastName" placeholder="Cohen" autocomplete="family-name">
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="sarah@email.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Phone <span class="opt">(optional)</span></label>
+      <input type="tel" id="phone" placeholder="+1 (954) 000-0000" autocomplete="tel">
+    </div>
+    <div class="field">
+      <label>Access Code</label>
+      <input type="text" id="accessCode" placeholder="Enter code from session" autocomplete="off" style="text-transform:uppercase;letter-spacing:2px;">
+    </div>
+
+    <div class="gate-err" id="gateErr"></div>
+    <button class="gate-btn" onclick="submitGate()">Unlock My Guide →</button>
+    <div class="gate-saving" id="gateSaving">Saving your details...</div>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="mainApp">
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="logo">Idan's <span>Clean</span> Method</div>
+        <div class="tagline">Kosher · Anti-Inflammatory · Real Food</div>
+      </div>
+      <button class="enemies-btn" onclick="toggleEnemies()">⚠️ 7 Enemies</button>
+    </div>
+  </div>
+
+  <div class="enemies-drawer" id="enemiesDrawer">
+    <div class="enemies-inner">
+      <div class="enemies-title">Spot these on a label? Put it back.</div>
+      <div class="enemy-row"><div class="enemy-num">1</div><div><div class="enemy-name">Synthetic Seed Oils</div><div class="enemy-aka">aka "vegetable oil," "partially hydrogenated oil," "expeller-pressed"</div><div class="enemy-oils">Soybean · Canola · Corn · Sunflower · Safflower · Cottonseed · Grapeseed · Rice Bran</div></div></div>
+      <div class="enemy-row"><div class="enemy-num">2</div><div><div class="enemy-name">High-Fructose Corn Syrup</div><div class="enemy-aka">aka "HFCS," "corn syrup," "glucose-fructose," "fructose syrup"</div></div></div>
+      <div class="enemy-row"><div class="enemy-num">3</div><div><div class="enemy-name">Mono- & Diglycerides</div><div class="enemy-aka">aka "emulsifiers" — hidden trans-fat carrier, not listed under fats</div></div></div>
+      <div class="enemy-row"><div class="enemy-num">4</div><div><div class="enemy-name">Carrageenan</div><div class="enemy-aka">aka "seaweed extract" — gut inflammation trigger in dairy & milk alternatives</div></div></div>
+      <div class="enemy-row"><div class="enemy-num">5</div><div><div class="enemy-name">Artificial Colors</div><div class="enemy-aka">Red 40, Yellow 5, Yellow 6, Blue 1 — linked to hyperactivity & cancer risk</div></div></div>
+      <div class="enemy-row"><div class="enemy-num">6</div><div><div class="enemy-name">Sodium Nitrite</div><div class="enemy-aka">aka "curing salt" — in deli meats, hot dogs; forms cancer-linked nitrosamines</div></div></div>
+      <div class="enemy-row"><div class="enemy-num">7</div><div><div class="enemy-name">BHA / BHT</div><div class="enemy-aka">aka "antioxidants" — synthetic preservatives, endocrine disruptors</div></div></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('all',this)">All</div>
+    <div class="tab" onclick="switchTab('wf',this)">Whole Foods</div>
+    <div class="tab" onclick="switchTab('sprouts',this)">Sprouts</div>
+    <div class="tab" onclick="switchTab('costco',this)">Costco</div>
+    <div class="tab" onclick="switchTab('aldi',this)">ALDI</div>
+  </div>
+
+  <div class="search-wrap">
+    <input class="search-input" type="search" placeholder="🔍  Search product..." oninput="filterItems(this.value)">
+  </div>
+
+  <div class="store-info" id="addrAll"><div class="store-dot"></div><div class="store-addr">Delray Beach &amp; Boca Raton — 4 stores covered</div></div>
+  <div class="store-info" id="addrWf" style="display:none"><div class="store-dot"></div><div class="store-addr">Whole Foods · 680 Linton Blvd, Delray Beach | 1400 Glades Rd, Boca Raton</div></div>
+  <div class="store-info" id="addrSprouts" style="display:none"><div class="store-dot"></div><div class="store-addr">Sprouts · 5030 W. Atlantic Ave, Delray Beach | 9858 Clint Moore Rd, Boca Raton</div></div>
+  <div class="store-info" id="addrCostco" style="display:none"><div class="store-dot"></div><div class="store-addr">Costco · 17800 Congress Ave, Boca Raton | 20505 US-441, Boca Raton</div></div>
+  <div class="store-info" id="addrAldi" style="display:none"><div class="store-dot"></div><div class="store-addr">ALDI · 4801 Linton Blvd, Delray Beach | 22191 Powerline Rd, Boca Raton</div></div>
+
+  <div class="items" id="itemsList"></div>
+
+  <div class="cta-bar">
+    <div class="cta-text">Questions? Ready to book a session? Idan answers personally.</div>
+    <a class="cta-btn" href="https://wa.me/19549550073?text=Chef%20Idan%20-%20I%27m%20interested%20in%20a%20clean%20kitchen%20session">
+      💬 WhatsApp Idan — +1 (954) 955-0073
+    </a>
+  </div>
+</div>
+
+<script>
+// ── CONFIG — paste your Google Apps Script URL here after setup ──
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzaL-3NrAEhLicx71Di75WXSRt7U1iA0UWhgc-bZqrnklSKbRpk6WyB32h3yRRA7k4VUA/exec';
+const ACCESS_CODE = 'IDANSMETHOD';
+
+// ── GATE LOGIC ──
+function submitGate(){
+  const firstName = document.getElementById('firstName').value.trim();
+  const lastName  = document.getElementById('lastName').value.trim();
+  const email     = document.getElementById('email').value.trim();
+  const phone     = document.getElementById('phone').value.trim();
+  const code      = document.getElementById('accessCode').value.trim().toUpperCase();
+  const errEl     = document.getElementById('gateErr');
+  const savingEl  = document.getElementById('gateSaving');
+
+  errEl.style.display = 'none';
+
+  if(!firstName){ showErr('Please enter your first name.'); return; }
+  if(!lastName){  showErr('Please enter your last name.');  return; }
+  if(!email || !email.includes('@')){ showErr('Please enter a valid email.'); return; }
+  if(code !== ACCESS_CODE){ showErr('Wrong access code. Ask Idan for the code.'); return; }
+
+  savingEl.style.display = 'block';
+
+  const payload = { firstName, lastName, email, phone, timestamp: new Date().toISOString() };
+
+  if(SHEET_URL !== 'YOUR_APPS_SCRIPT_URL_HERE'){
+    fetch(SHEET_URL, {
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    }).finally(() => unlockApp());
+  } else {
+    // Dev mode — skip sending, just unlock
+    setTimeout(unlockApp, 600);
+  }
+}
+
+function showErr(msg){
+  const el = document.getElementById('gateErr');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function unlockApp(){
+  document.getElementById('gateScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+}
+
+// ── PRODUCT DATA ──
+const items = [
+  {id:1,store:'wf',emoji:'🥗',toss:'Salad Dressing',why:'Canola/soybean oil, refined sugar, xanthan gum, "natural flavors."',swap:'<b>Primal Kitchen Avocado Oil Vinaigrettes</b> (Caesar, Greek) — avocado oil, organic vinegars & spices.',kosher:'OU Pareve'},
+  {id:2,store:'wf',emoji:'🥛',toss:'Oat Milk',why:'Canola/rapeseed oil emulsifiers, gellan gum, dipotassium phosphate.',swap:'<b>MALK Organic Oat Milk</b> — filtered water, organic oats, Himalayan salt. Oil & gum free.',kosher:'OU Pareve'},
+  {id:3,store:'wf',emoji:'☕',toss:'Coffee Creamer',why:'Hydrogenated oils, corn syrup solids, mono- & diglycerides, carrageenan.',swap:'<b>Laird Superfood Creamer</b> — coconut milk powder, organic coconut sugar, Lion\'s Mane.',kosher:'OU Dairy / check label'},
+  {id:4,store:'wf',emoji:'🍗',toss:'Marinade',why:'Soybean/canola oil, HFCS, modified corn starch, preservatives.',swap:'<b>Primal Kitchen Avocado Oil Marinades</b> (Greek, Italian) — avocado oil & organic vinegar, no seed oils.',kosher:'OU Pareve'},
+  {id:5,store:'wf',emoji:'🫘',toss:'Hummus',why:'Cheap sunflower, canola or soybean oil as filler.',swap:'<b>Ithaca x Graza Olive Oil Hummus</b> — 100% extra virgin olive oil, no seed oils.',kosher:'OU Pareve'},
+  {id:6,store:'wf',emoji:'🍞',toss:'Store Bread',why:'Soybean/canola oil, monoglycerides, HFCS, calcium propionate.',swap:'<b>Food For Life Ezekiel 4:9 Bread</b> — sprouted, flourless, zero oils or refined sugar.',kosher:'OU Pareve'},
+  {id:7,store:'wf',emoji:'🍿',toss:'Popcorn',why:'Canola/soybean oil, hydrogenated palm oil, artificial butter flavor.',swap:'<b>LesserEvil Himalayan Pink Salt</b> — organic air-popped corn, extra virgin coconut oil, pink salt.',kosher:'OU Pareve'},
+  {id:8,store:'sprouts',emoji:'🌮',toss:'Tortilla Chips',why:'Corn/canola/soybean oil, refined corn meal fried at extreme heat.',swap:'<b>Siete Grain Free Sea Salt Chips</b> — avocado oil, cassava & coconut flour, ground chia.',kosher:'OU Pareve'},
+  {id:9,store:'sprouts',emoji:'🫘',toss:'Hummus (alt)',why:'Expeller-pressed sunflower, canola or soybean oil.',swap:'<b>Hope Foods Hummus</b> — organic flaxseed oil, no seed oils or canola.',kosher:'OU Pareve'},
+  {id:10,store:'costco',emoji:'🥚',toss:'Mayo',why:'Soybean/canola oil base, calcium disodium EDTA preservative.',swap:'<b>Chosen Foods Avocado Oil Classic Mayo</b> — 100% avocado oil, cage-free eggs, organic vinegar.',kosher:'OU Pareve'},
+  {id:11,store:'costco',emoji:'🥔',toss:'Potato Chips',why:'"Vegetable oil" blends (soybean, canola, corn, sunflower) — high linoleic acid.',swap:'<b>Boulder Canyon Avocado Oil Kettle Chips</b> — potatoes, avocado oil, sea salt. Nothing else.',kosher:'OU Pareve'},
+  {id:12,store:'costco',emoji:'🍫',toss:'Granola Bars',why:'Canola/soybean oil, HFCS, brown sugar, soy lecithin.',swap:'<b>Autumn\'s Gold Cinnamon Almond Bars</b> — grain-free, Paleo-certified, honey & coconut oil.',kosher:'OU Pareve'},
+  {id:13,store:'aldi',emoji:'🍅',toss:'Marinara Sauce',why:'Canola/soybean oil, added cane sugar, citric acid.',swap:'<b>ALDI Specially Selected Premium Marinara</b> — Italian tomatoes, extra virgin olive oil, herbs. Zero seed oils.',kosher:'OU Pareve'},
+  {id:14,store:'aldi',emoji:'🍞',toss:'Store Bread (alt)',why:'Soybean/canola oil, monoglycerides, HFCS, calcium propionate.',swap:'<b>ALDI Knock Your Sprouts Off 7-Grain</b> — sprouted multigrain, zero seed oils or refined sugar.',kosher:'OU Pareve'},
+];
+
+let currentTab='all', currentSearch='';
+
+function renderItems(){
+  const list=document.getElementById('itemsList');
+  let filtered=items.filter(i=>{
+    const matchTab=currentTab==='all'||i.store===currentTab;
+    const q=currentSearch.toLowerCase();
+    const matchSearch=!q||i.toss.toLowerCase().includes(q)||i.swap.toLowerCase().includes(q);
+    return matchTab&&matchSearch;
+  });
+  if(!filtered.length){list.innerHTML='<div class="section-empty">No matches found.<br>Try a different search.</div>';return;}
+  list.innerHTML=filtered.map(i=>`
+    <div class="item-card" id="card${i.id}">
+      <div class="item-header" onclick="toggleCard(${i.id})">
+        <div class="item-icon">${i.emoji}</div>
+        <div class="item-main">
+          <div class="item-toss">❌ ${i.toss}</div>
+          <div class="item-swap-preview">✅ ${i.swap.replace(/<[^>]+>/g,'').split('—')[0].trim()}</div>
+        </div>
+        <div class="item-chevron">▾</div>
+      </div>
+      <div class="item-body">
+        <div class="item-body-inner">
+          <div class="why-label">Why toss it</div>
+          <div class="why-text">${i.why}</div>
+          <div class="swap-label">Grab this instead</div>
+          <div class="swap-text">${i.swap}</div>
+          <span class="kosher-badge">✡ ${i.kosher}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleCard(id){document.getElementById('card'+id).classList.toggle('open');}
+function switchTab(tab,el){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['All','Wf','Sprouts','Costco','Aldi'].forEach(s=>document.getElementById('addr'+s).style.display='none');
+  const map={all:'All',wf:'Wf',sprouts:'Sprouts',costco:'Costco',aldi:'Aldi'};
+  document.getElementById('addr'+map[tab]).style.display='flex';
+  renderItems();
+}
+function filterItems(q){currentSearch=q;renderItems();}
+function toggleEnemies(){document.getElementById('enemiesDrawer').classList.toggle('open');}
+
+renderItems();
+</script>
+</body>
+</html>
