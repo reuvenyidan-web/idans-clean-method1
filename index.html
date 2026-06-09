@@ -238,6 +238,13 @@ function showErr(msg){
 }
 
 function unlockApp(){
+  localStorage.setItem('icm_registered', '1');
+  document.getElementById('gateScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+}
+
+// Check if already registered
+if(localStorage.getItem('icm_registered')){
   document.getElementById('gateScreen').style.display = 'none';
   document.getElementById('mainApp').style.display = 'block';
 }
